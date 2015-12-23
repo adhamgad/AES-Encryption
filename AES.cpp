@@ -1,11 +1,12 @@
 #include <iostream>
-
+#include <algorithm>
 #include <string>
 #include <sstream>
 #include <stdio.h>
+#include <iomanip>
 
 typedef short byte;
-typedef unsigned char uint8_t ;
+typedef unsigned int word;
 
 using namespace std;
 
@@ -29,7 +30,7 @@ static const short S_BOX[] =
 	0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 };
 
-static const short Rcon[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
+static const short Rcon[11] = {0x00,0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
 
 
 void parseInput(byte plainText[16] , byte key[16]){
@@ -50,11 +51,74 @@ void parseInput(byte plainText[16] , byte key[16]){
     	temp = k.substr(i,2);
     	ss << hex << temp;
     	ss >> key[current];
-
         current ++;
     }
+}
+
+
+void rotWord(word w[4]){
+	byte temp = w[0];
+	w[0] = w[1];
+	w[1] = w[2];
+	w[2] = w[3];
+	w[3] = temp;
+}
+
+void byteSubstitution(word w[4]){
+	for(int i = 0 ; i < 4 ; i++){
+		byte a = w[i];
+		w[i] = S_BOX[a];
+	}
 
 }
+
+word *exor(word w1[4] , word w2[4]){
+	word result[4];
+	for(int i = 0 ; i < 4 ; i++){
+		result[i] = w1[i] ^ w2[2];
+	}
+	return result;
+}
+
+void keyExpansion(byte key[16] , word w[44][4]){
+
+	int counter = 0 ;
+	for(int i = 0 ; i< 4 ; i++){
+		for(int j = 0 ; j < 4 ; j++){
+			w[i][j] = key[counter];
+			counter ++;
+		}
+	}
+	//cout <<"Word 3 "<< hex << w[3][0] << endl ;
+	for(int i = 4 ; i < 44 ; i++){
+
+		word temp[4];
+		for(int k = 0 ;k<4 ; k++ ){
+			temp[k] = w[i-1][k];
+		}
+
+		if(i % 4 == 0){
+			rotWord(temp);
+			byteSubstitution(temp);
+
+			temp[0] = temp[0] ^ Rcon[i/4];
+		}
+
+		for(int j = 0 ; j<4 ; j++){
+			w[i][j] = w[i-4][j] ^ temp[j];
+
+		}
+	}
+
+}
+
+void firstRoundKey(byte plainText[16],byte key[16]){
+
+	for(int i = 0 ; i < 16 ; i ++){
+		plainText[i] = plainText[i] ^ key[i] ;
+	}
+}
+
 
 
 int main()
@@ -62,9 +126,14 @@ int main()
 
     byte plainText[16];
     byte key[16];
+    word w[44][4];
     parseInput(plainText,key);
+    keyExpansion(key,w);
+    firstRoundKey(plainText,key);
 
-
+    for(int i = 0 ; i < 16 ; i++){
+    	cout << hex << setw(2) << setfill('0') << plainText[i];
+    }
 
     return 0;
 }
