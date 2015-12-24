@@ -69,7 +69,6 @@ void byteSubstitution(word w[4]){
 		byte a = w[i];
 		w[i] = S_BOX[a];
 	}
-
 }
 
 word *exor(word w1[4] , word w2[4]){
@@ -113,13 +112,55 @@ void keyExpansion(byte key[16] , word w[44][4]){
 }
 
 void firstRoundKey(byte plainText[16],byte key[16]){
-
 	for(int i = 0 ; i < 16 ; i ++){
 		plainText[i] = plainText[i] ^ key[i] ;
 	}
 }
 
+void subBytes(byte text[16]){
+	for(int i = 0 ; i < 16 ; i++){
+		byte a = text[i];
+		text[i] = S_BOX[a];
+	}
+}
 
+void shiftRows(byte text[16]){
+	int counter = 0;
+	for(int i = 0 ; i < 4 ; i ++ ){
+		if(i != 0 ){
+			counter ++;
+		}
+
+		if(counter == 1){
+			byte temp = text[i];
+			text[i] = text[i+4];
+			text[i+4] = text[i+8];
+			text[i+8] = text[i+12];
+			text[i+12] = temp;
+		}
+		if(counter == 2){
+			byte temp1 = text[i];
+			byte temp2 = text[i+4];
+			text[i] = text[i+8];
+			text[i+4] = text[i+12];
+			text[i+8] = temp1;
+			text[i+12] = temp2;
+		}
+		if(counter == 3){
+			byte temp1 = text[i];
+			byte temp2 = text[i+4];
+			byte temp3 = text[i+8];
+
+			text[i] = text[i+12];
+			text[i+4] = temp1;
+			text[i+8] = temp2;
+			text[i+12] = temp3;
+
+		}
+
+
+	}
+}
 
 int main()
 {
@@ -134,6 +175,24 @@ int main()
     for(int i = 0 ; i < 16 ; i++){
     	cout << hex << setw(2) << setfill('0') << plainText[i];
     }
+    cout << endl;
+
+    subBytes(plainText);
+
+    for(int i = 0 ; i < 16 ; i++){
+    	cout << hex << setw(2) << setfill('0') << plainText[i];
+    }
+
+    cout << endl;
+
+    shiftRows(plainText);
+
+
+    for(int i = 0 ; i < 16 ; i++){
+    	cout << hex << setw(2) << setfill('0') << plainText[i];
+    }
+
+    cout << endl;
 
     return 0;
 }
