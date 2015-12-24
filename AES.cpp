@@ -77,6 +77,7 @@ void parseInput(byte plainText[16] , byte key[16]){
     cin >> p ;
     cout << "Key:";
     cin >> k;
+
     //parse input from string to array
     int current = 0 ;
     for(unsigned int i = 0 ; i < 32 ; i = i+2){
@@ -108,14 +109,6 @@ void byteSubstitution(word w[4]){
 	}
 }
 
-word *exor(word w1[4] , word w2[4]){
-	word result[4];
-	for(int i = 0 ; i < 4 ; i++){
-		result[i] = w1[i] ^ w2[2];
-	}
-	return result;
-}
-
 void keyExpansion(byte key[16] , word w[44][4]){
 
 	int counter = 0 ;
@@ -125,7 +118,7 @@ void keyExpansion(byte key[16] , word w[44][4]){
 			counter ++;
 		}
 	}
-	//cout <<"Word 3 "<< hex << w[3][0] << endl ;
+
 	for(int i = 4 ; i < 44 ; i++){
 
 		word temp[4];
@@ -243,63 +236,50 @@ int main()
     byte plainText[16];
     byte key[16];
     word w[44][4];
-    parseInput(plainText,key);
-    keyExpansion(key,w);
-    firstRoundKey(plainText,key);
+    int aesRounds;
+    int r;
+    cout <<"Main Rounds:";
+    cin >> r;
+    for(int repeat = 0 ; repeat < r ; repeat++ ){
+    	parseInput(plainText,key);
+    	cout << "AES Rounds:";
+    	cin >>aesRounds;
+    	for(int aes = 0 ; aes <aesRounds ; aes ++ ){
+    		keyExpansion(key,w);
+    		firstRoundKey(plainText,key);
 
-	for(int i = 0 ; i < 16 ; i++){
-	    	cout << hex << setw(2) << setfill('0') << plainText[i];
-	    }
-	    cout << endl;
+    		for(int currRound = 1 ; currRound <= 10 ; currRound ++){
+    			subBytes(plainText);
+    			shiftRows(plainText);
 
-    for(int currRound = 1 ; currRound <= 10 ; currRound ++){
+    			if(currRound==10){
+    				//do nothing
+    			}else{
+    				mixColumns(plainText);
+    			}
 
-    	    subBytes(plainText);
+    			byte temp[16];
+    			int count = 0;
+    			int t = currRound * 4;
+    			for(int i = t ; i < (t+4) ; i++){
+    				for(int j = 0 ; j < 4 ; j++){
+    					temp[count] = w[i][j];
+    					count++;
+    				}
+    			}
+    			roundKey(plainText,temp);
 
-    	    for(int i = 0 ; i < 16 ; i++){
-    	    	cout << hex << setw(2) << setfill('0') << plainText[i];
     	    }
 
-    	    cout << endl;
-
-    	    shiftRows(plainText);
-
-
-    	    for(int i = 0 ; i < 16 ; i++){
-    	    	cout << hex << setw(2) << setfill('0') << plainText[i];
-    	    }
-    	    cout << endl;
-
-    	    if(currRound==10){
-    	    	//do nothing
-    	    }else{
-        	    mixColumns(plainText);
-
-        	    for(int i = 0 ; i < 16 ; i++){
-        	    	cout << hex << setw(2) << setfill('0') << plainText[i];
-        	    }
-        	    cout << endl;
-    	    }
-
-
-
-    	    byte temp[16];
-    	    int count = 0;
-    	    int t = currRound * 4;
-    	    for(int i = t ; i < (t+4) ; i++){
-    	    	for(int j = 0 ; j < 4 ; j++){
-    	    		temp[count] = w[i][j];
-    	    		count++;
-    	    	}
-    	    }
-
-    	    roundKey(plainText,temp);
-
-    	    for(int i = 0 ; i < 16 ; i++){
-    	       	cout << hex << setw(2) << setfill('0') << plainText[i];
-    	     }
-    	    cout << endl;
     }
+
+    	for(int i = 0 ; i < 16 ; i++){
+    		cout << hex << setw(2) << setfill('0') << plainText[i];
+    	}
+    	cout << endl;
+
+   }
+
 
 
     return 0;
