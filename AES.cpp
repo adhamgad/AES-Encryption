@@ -231,6 +231,12 @@ void mixColumns(byte text[16]){
 
 }
 
+void roundKey(byte text[16] ,byte rKey[16]){
+	for(int i = 0 ; i < 16 ; i ++){
+		text[i] = text[i] ^ rKey[i] ;
+	}
+}
+
 int main()
 {
 
@@ -241,33 +247,60 @@ int main()
     keyExpansion(key,w);
     firstRoundKey(plainText,key);
 
-    for(int i = 0 ; i < 16 ; i++){
-    	cout << hex << setw(2) << setfill('0') << plainText[i];
+	for(int i = 0 ; i < 16 ; i++){
+	    	cout << hex << setw(2) << setfill('0') << plainText[i];
+	    }
+	    cout << endl;
+
+    for(int currRound = 1 ; currRound <= 10 ; currRound ++){
+
+    	    subBytes(plainText);
+
+    	    for(int i = 0 ; i < 16 ; i++){
+    	    	cout << hex << setw(2) << setfill('0') << plainText[i];
+    	    }
+
+    	    cout << endl;
+
+    	    shiftRows(plainText);
+
+
+    	    for(int i = 0 ; i < 16 ; i++){
+    	    	cout << hex << setw(2) << setfill('0') << plainText[i];
+    	    }
+    	    cout << endl;
+
+    	    if(currRound==10){
+    	    	//do nothing
+    	    }else{
+        	    mixColumns(plainText);
+
+        	    for(int i = 0 ; i < 16 ; i++){
+        	    	cout << hex << setw(2) << setfill('0') << plainText[i];
+        	    }
+        	    cout << endl;
+    	    }
+
+
+
+    	    byte temp[16];
+    	    int count = 0;
+    	    int t = currRound * 4;
+    	    for(int i = t ; i < (t+4) ; i++){
+    	    	for(int j = 0 ; j < 4 ; j++){
+    	    		temp[count] = w[i][j];
+    	    		count++;
+    	    	}
+    	    }
+
+    	    roundKey(plainText,temp);
+
+    	    for(int i = 0 ; i < 16 ; i++){
+    	       	cout << hex << setw(2) << setfill('0') << plainText[i];
+    	     }
+    	    cout << endl;
     }
-    cout << endl;
 
-    subBytes(plainText);
-
-    for(int i = 0 ; i < 16 ; i++){
-    	cout << hex << setw(2) << setfill('0') << plainText[i];
-    }
-
-    cout << endl;
-
-    shiftRows(plainText);
-
-
-    for(int i = 0 ; i < 16 ; i++){
-    	cout << hex << setw(2) << setfill('0') << plainText[i];
-    }
-    cout << endl;
-
-    mixColumns(plainText);
-
-    for(int i = 0 ; i < 16 ; i++){
-    	cout << hex << setw(2) << setfill('0') << plainText[i];
-    }
-    cout << endl;
 
     return 0;
 }
